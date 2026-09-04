@@ -442,7 +442,7 @@ p.lead{color:var(--muted);line-height:1.8;font-size:17px}
   <div class="panel center">
     <div class="tag red">SURVIVAL FAILED</div>
     <h1 class="display">탈락</h1>
-    <p class="lead">모든 하트를 소진했습니다.<br>다시 도전해 진실을 밝혀내세요.</p>
+    <p class="lead">모든 하트를 소진했습니다.<br>재도전 시 하트는 3개로 초기화되지만,<br><b>지금까지 걸린 시간은 그대로 이어집니다.</b></p>
     <button class="primary wide restartBtn">다시 도전하기</button>
   </div>
 </div>
@@ -454,8 +454,7 @@ p.lead{color:var(--muted);line-height:1.8;font-size:17px}
     <h1 class="display center">사건 종결</h1>
     <div class="resultBig"><span id="resultTime" class="resultTime">00:00.00</span></div>
     <div class="resultSub">참가자 <span id="resultId" class="mono"></span> 님, 모든 사건을 해결하셨습니다!</div>
-
-    <button class="primary wide restartBtn" style="margin-top:22px">다시 도전하기</button>
+    <p class="lead" style="margin-top:8px">수고하셨습니다. 참여가 완료되었습니다.</p>
   </div>
 </div>
 
@@ -588,6 +587,7 @@ const state = {
   revealedClues: [],
   penaltySeconds: 0,
   startTime: 0,
+  carriedMs: 0,
   timerHandle: null,
   locked: false,
   finished: false
@@ -629,6 +629,7 @@ async function handleEntrySubmit(input, btn, err) {
     err.textContent = "참가자 ID를 입력해 주세요.";
     return;
   }
+  state.carriedMs = 0;
   err.textContent = "";
 
   // 같은 브라우저 내 1차 확인 (기기가 달라지면 우회 가능한 보조 장치)
@@ -711,7 +712,7 @@ function startGame() {
 function startTimer() {
   clearInterval(state.timerHandle);
   state.timerHandle = setInterval(() => {
-    const elapsed = performance.now() - state.startTime + state.penaltySeconds * 1000;
+    const elapsed = performance.now() - state.startTime + state.penaltySeconds * 1000 + state.carriedMs;
     $("timerDisplay").textContent = fmtTime(elapsed);
   }, 50);
 }
@@ -886,13 +887,15 @@ function showGuide(data, onDone) {
 
 function gameOver() {
   stopTimer();
+  const elapsedSoFar = performance.now() - state.startTime + state.penaltySeconds * 1000;
+  state.carriedMs += elapsedSoFar;
   showScreen("page-over");
 }
 
 function finishGame(success) {
   stopTimer();
   state.finished = true;
-  const elapsedMs = performance.now() - state.startTime + state.penaltySeconds * 1000;
+  const elapsedMs = performance.now() - state.startTime + state.penaltySeconds * 1000 + state.carriedMs;
   $("resultTime").textContent = fmtTime(elapsedMs);
   $("resultId").textContent = state.knoxId;
   showScreen("page-result");
