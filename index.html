@@ -632,14 +632,8 @@ async function handleEntrySubmit(input, btn, err) {
   state.carriedMs = 0;
   err.textContent = "";
 
-  // 같은 브라우저 내 1차 확인 (기기가 달라지면 우회 가능한 보조 장치)
-  if (isUsedLocally(v)) {
-    err.textContent = "이미 이 브라우저에서 참여한 ID입니다.";
-    return;
-  }
-
   if (!RANKING_ENDPOINT) {
-    // 서버 미설정: 로컬 기준으로만 진행
+    // 서버 미설정: 별도 중복 확인 없이 진행
     state.knoxId = v;
     logParticipant(v);
     showScreen("page-rules");
@@ -671,16 +665,6 @@ async function handleEntrySubmit(input, btn, err) {
   } finally {
     btn.disabled = false;
     btn.textContent = originalText;
-  }
-}
-
-function isUsedLocally(id) {
-  try {
-    const rows = JSON.parse(localStorage.getItem(LOCAL_LOG_KEY) || "[]");
-    const norm = id.trim().toLowerCase();
-    return rows.some(r => String(r.knoxId).trim().toLowerCase() === norm);
-  } catch (e) {
-    return false;
   }
 }
 
