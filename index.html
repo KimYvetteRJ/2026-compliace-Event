@@ -906,6 +906,11 @@ function saveMyRecord(id, timeMs) {
     rows.push({ knoxId: id, timeMs: timeMs, timeText: fmtTime(timeMs), at: new Date().toISOString() });
     localStorage.setItem(LOCAL_RANK_KEY, JSON.stringify(rows));
   } catch (e) { /* noop */ }
+
+  if (RANKING_ENDPOINT) {
+    const url = RANKING_ENDPOINT + "?action=submit&id=" + encodeURIComponent(id) + "&timeMs=" + Math.round(timeMs);
+    fetch(url).catch(e => console.warn("완료 기록 전송 실패:", e));
+  }
 }
 
 /* -------- 재시작 -------- */
